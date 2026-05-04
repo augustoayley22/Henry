@@ -65,7 +65,7 @@ export default function PresentesPage() {
               {/* FRALDAS */}
               <GiftBlock
                 title="Fraldas 🍼"
-                description="RN, P ou M já ajudam demais!"
+                description="P, M, G, GG já ajudam demais!"
                 examples={["Pampers", "Huggies", "Cremer"]}
               />
 

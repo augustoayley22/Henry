@@ -73,13 +73,12 @@ export default function LocalPage() {
                 className={`${rye.className} text-[23px] leading-tight text-[#4b230f]`}
                 style={{ textShadow: "1px 1px 0 #f4d7a4" }}
               >
-                Chácara do Henry
+                Sítio Recanto das Palmeiras
               </p>
 
               <p className="mt-3 font-serif text-[17px] font-black leading-tight text-[#6a3217]">
-                Rua Exemplo, 123
                 <br />
-                São Paulo/SP
+                Itaúna/MG
               </p>
 
               <div className="mx-auto my-4 h-[2px] w-[70%] rounded-full bg-[#9b6333]/35" />
@@ -94,7 +93,7 @@ export default function LocalPage() {
           <div className="mt-5 w-full overflow-hidden rounded-[26px] border-2 border-dashed border-[#9b6333]/65 bg-[#fff1cf]/80 p-2 shadow-[0_10px_20px_rgba(80,35,10,.22)]">
             <div className="h-[300px] overflow-hidden rounded-[20px] border border-[#9b6333]/35">
               <iframe
-                src="https://www.google.com/maps?q=-23.55052,-46.633308&z=15&output=embed"
+                src="https://www.google.com/maps?q=-20.115147936384496,-44.57631962289041&z=15&output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -106,7 +105,7 @@ export default function LocalPage() {
           {/* botões */}
           <div className="mt-6 flex w-full flex-col gap-4">
             <a
-              href="https://www.google.com/maps?q=-23.55052,-46.633308"
+              href="https://www.google.com/maps?q=-20.115147936384496,-44.57631962289041"
               target="_blank"
               rel="noopener noreferrer"
               className={`${rye.className} relative rounded-2xl px-5 py-4 text-[19px] text-[#fff4d8] transition hover:-translate-y-1 active:translate-y-1`}

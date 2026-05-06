@@ -57,7 +57,9 @@ export default function ConvidadosPage() {
       }
 
       setGuests(data || []);
-    }
+    } 
+
+    
 
     loadGuests();
 

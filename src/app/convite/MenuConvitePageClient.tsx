@@ -223,7 +223,7 @@ export default function MenuConvitePage() {
                   textShadow: "1px 1px 0 #f4d7a4",
                 }}
               >
-                Confirmar Presença
+                Você poderá comparecer?
               </h2>
 
               <p className="mt-3 font-serif text-[18px] font-black text-[#6a3217]">

@@ -10,16 +10,21 @@ const rye = Rye({
 });
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ nome?: string }>;
 };
 
 
-export default async function ConvitePage({ params }: Props) {
-  const { id } = await params;
 
-  const nome = id
-    ? decodeURIComponent(id).replaceAll("-", " ")
-    : "Convidado";
+export default async function ConvitePage({ params, searchParams }: Props) {
+  const { id } = await params;
+  const { nome } = await searchParams;
+
+  const nomeConvidado = nome
+    ? decodeURIComponent(nome)
+    : id
+      ? decodeURIComponent(id).replaceAll("-", " ")
+      : "Convidado";
 
 
   return (
@@ -89,7 +94,7 @@ export default async function ConvitePage({ params }: Props) {
                 textShadow: "1px 1px 0 #f4d7a4",
               }}
             >
-              {nome.toUpperCase()}
+              {nomeConvidado.toUpperCase()}
             </p>
 
             <span className="mt-1 h-[2px] w-[60px] rounded-full bg-[#9b6333]/40" />
@@ -320,7 +325,7 @@ export default async function ConvitePage({ params }: Props) {
           </div>
           {/* botão */}
           <Link
-            href={`/convite?guest=${id}`}
+            href={`/convite?guest=${encodeURIComponent(nomeConvidado)}`}
             className={`${rye.className} relative mt-6 mb-6 block w-full rounded-2xl px-5 py-4 text-center font-serif text-[25px] font-black text-[#fff4d8] transition active:translate-y-1`}
             style={{
               background: "linear-gradient(180deg, #a94d1c, #61250c)",

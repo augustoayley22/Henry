@@ -1,4 +1,3 @@
-// components/Bandeirinhas.tsx
 
 type Flag = {
   x: number;
@@ -22,17 +21,40 @@ const baseFlags = [
   { fill: "url(#brown-plaid)", stroke: "#5d3213" },
 ];
 
+const customOffsets = [
+  { y: 2, rotate: -8 },
+  { y: -1, rotate: 4 },
+  { y: 1, rotate: -3 },
+  { y: 6, rotate: 7 },
+  { y: 14, rotate: -6 },
+  { y: 12, rotate: 3 },
+  { y: 10, rotate: -4 },
+  { y: 3, rotate: 6 },
+  { y: -5, rotate: -5 },
+  { y: -11, rotate: 2 },
+  { y: -4, rotate: -7 },
+  { y: 7, rotate: 4 },
+];
+
 const flags: Flag[] = Array.from({ length: 12 }).map((_, i) => {
   const pattern = baseFlags[i % baseFlags.length];
+  const offset = customOffsets[i];
+
   const x = 12 + i * 58;
 
-  const ropeY = 22 - Math.sin((x / 650) * Math.PI * 2.1) * 8;
+  const ropeY =
+    22 - Math.sin((x / 650) * Math.PI * 2.1) * 8;
 
   return {
     x,
-    y: ropeY + 3,
-    rotate: [-5, 3, -2, 5, -4, 2][i % 6],
+
+    // agora cada uma tem posição própria
+    y: ropeY + offset.y,
+
+    rotate: offset.rotate,
+
     scale: [0.92, 1.04, 0.98, 1.08, 0.94, 1][i % 6],
+
     ...pattern,
   };
 });

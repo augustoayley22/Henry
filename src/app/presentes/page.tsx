@@ -61,15 +61,13 @@ export default function PresentesPage() {
           {/* card */}
           <div className="mt-6 w-full rounded-[28px] border-2 border-dashed border-[#9b6333]/65 bg-[#fff1cf]/80 p-3 shadow-[0_10px_20px_rgba(80,35,10,.22)]">
             <div className="rounded-[22px] bg-[#f9ddb0]/70 px-4 py-5 space-y-4">
-
-              {/* FRALDAS */}
+            
               <GiftBlock
                 title="Fraldas 🍼"
                 description="P, M, G, GG já ajudam demais!"
                 examples={["Pampers", "Huggies", "Cremer"]}
               />
 
-              {/* MIMOS */}
               <GiftBlock
                 title="Mimos 🎁"
                 description="Um carinho pro Henry"

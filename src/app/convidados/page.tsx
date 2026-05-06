@@ -31,7 +31,11 @@ function slugify(name: string) {
 
 function getGuestLink(guest: Guest) {
   if (typeof window === "undefined") return "";
-  return `${window.location.origin}/${slugify(guest.name)}`;
+
+  const slug = slugify(guest.name);
+  const nome = encodeURIComponent(guest.name);
+
+  return `${window.location.origin}/c/${slug}?nome=${nome}`;
 }
 
 const STORAGE_KEY = "arraia_guests";
@@ -45,11 +49,27 @@ const statusLabel: Record<GuestStatus, string> = {
 export default function ConvidadosPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [name, setName] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const auth = localStorage.getItem("auth");
+
+    if (auth !== "true") {
+      window.location.href = "/login";
+      return;
+    }
+
+    setIsCheckingAuth(false);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setGuests(JSON.parse(saved));
   }, []);
+
+  if (isCheckingAuth) {
+    return null;
+  }
 
   function saveGuests(nextGuests: Guest[]) {
     setGuests(nextGuests);

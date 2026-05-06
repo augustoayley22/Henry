@@ -12,6 +12,8 @@ const rye = Rye({
   weight: "400",
 });
 
+
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -19,12 +21,16 @@ export default function LoginPage() {
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
-    if (email === "admin@arraia.com" && senha === "123456") {
+    if (
+      email.trim().toLowerCase() === "lilian" &&
+      senha === "abc123"
+    ) {
       localStorage.setItem("auth", "true");
-      localStorage.setItem("user", email);
-      window.location.href = "/menu-convite";
+      localStorage.setItem("user", "lilian");
+
+      window.location.href = "/convidados";
     } else {
-      alert("Email ou senha inválidos");
+      alert("Usuário ou senha inválidos");
     }
   }
 
@@ -86,8 +92,8 @@ export default function LoginPage() {
               <form onSubmit={handleLogin} className="flex flex-col gap-4">
 
                 <input
-                  type="email"
-                  placeholder="Seu email"
+                  type="text"
+                  placeholder="Usuário"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="rounded-full px-4 py-3 outline-none border-2 border-[#d97a28]"

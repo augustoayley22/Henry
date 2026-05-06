@@ -5,6 +5,8 @@ import Link from "next/link";
 import Bandeirinhas from "@/components/Bandeirinhas/Bandeirinhas";
 import EstrelasAnimadas from "@/components/Bandeirinhas/EstrelasAnimadas";
 import { Rye } from "next/font/google";
+import { supabase } from "@/lib/supabase";
+
 
 const rye = Rye({
   subsets: ["latin"],
@@ -17,34 +19,14 @@ type Guest = {
   id: string;
   name: string;
   status: GuestStatus;
-  createdAt: string;
+  created_at: string;
 };
-
-function slugify(name: string) {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
 
 function getGuestLink(guest: Guest) {
   if (typeof window === "undefined") return "";
-
-  const slug = slugify(guest.name);
-  const nome = encodeURIComponent(guest.name);
-
-  return `${window.location.origin}/c/${slug}?nome=${nome}`;
+  return `${window.location.origin}/c/${guest.id}`;
 }
 
-const STORAGE_KEY = "arraia_guests";
-
-const statusLabel: Record<GuestStatus, string> = {
-  pending: "Aguardando resposta",
-  confirmed: "Presença confirmada",
-  declined: "Não poderá comparecer",
-};
 
 export default function ConvidadosPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
@@ -63,40 +45,112 @@ export default function ConvidadosPage() {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) setGuests(JSON.parse(saved));
+    async function loadGuests() {
+      const { data, error } = await supabase
+        .from("guests")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setGuests(data || []);
+    }
+
+    loadGuests();
+
+    const channel = supabase
+      .channel("guests-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "guests",
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newGuest = payload.new as Guest;
+
+            setGuests((current) => {
+              const exists = current.some((guest) => guest.id === newGuest.id);
+              if (exists) return current;
+
+              return [newGuest, ...current];
+            });
+          }
+
+          if (payload.eventType === "UPDATE") {
+            const updatedGuest = payload.new as Guest;
+
+            setGuests((current) =>
+              current.map((guest) =>
+                guest.id === updatedGuest.id ? updatedGuest : guest
+              )
+            );
+          }
+
+          if (payload.eventType === "DELETE") {
+            const deletedGuest = payload.old as Guest;
+
+            setGuests((current) =>
+              current.filter((guest) => guest.id !== deletedGuest.id)
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  if (isCheckingAuth) {
-    return null;
-  }
-
-  function saveGuests(nextGuests: Guest[]) {
-    setGuests(nextGuests);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextGuests));
-  }
-
-  function addGuest() {
+  async function addGuest() {
     if (!name.trim()) return;
 
-    const newGuest: Guest = {
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
+    const { data, error } = await supabase
+      .from("guests")
+      .insert({
+        name: name.trim(),
+        status: "pending",
+      })
+      .select()
+      .single();
 
-    saveGuests([newGuest, ...guests]);
+    if (error) {
+      console.error(error);
+      alert("Erro ao adicionar convidado");
+      return;
+    }
+
+    setGuests([data, ...guests]);
     setName("");
   }
 
-  function removeGuest(id: string) {
-    saveGuests(guests.filter((guest) => guest.id !== id));
-  }
+  async function removeGuest(id: string) {
+    const { error } = await supabase
+      .from("guests")
+      .delete()
+      .eq("id", id);
 
+    if (error) {
+      console.error(error);
+      alert("Erro ao remover convidado");
+      return;
+    }
+
+    setGuests(guests.filter((guest) => guest.id !== id));
+  }
 
   async function copyLink(guest: Guest) {
     await navigator.clipboard.writeText(getGuestLink(guest));
+  }
+
+  if (isCheckingAuth) {
+    return null;
   }
 
   return (

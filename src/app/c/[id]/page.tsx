@@ -3,7 +3,7 @@ import Image from "next/image";
 import EstrelasAnimadas from "@/components/Bandeirinhas/EstrelasAnimadas";
 import { Rye } from "next/font/google";
 import Link from "next/link";
-
+import { supabase } from "@/lib/supabase";
 const rye = Rye({
   subsets: ["latin"],
   weight: "400",
@@ -11,21 +11,20 @@ const rye = Rye({
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ nome?: string }>;
 };
 
 
 
-export default async function ConvitePage({ params, searchParams }: Props) {
+export default async function ConvitePage({ params }: Props) {
   const { id } = await params;
-  const { nome } = await searchParams;
 
-  const nomeConvidado = nome
-    ? decodeURIComponent(nome)
-    : id
-      ? decodeURIComponent(id).replaceAll("-", " ")
-      : "Convidado";
+  const { data: guest } = await supabase
+    .from("guests")
+    .select("*")
+    .eq("id", id)
+    .single();
 
+  const nomeConvidado = guest?.name || "Convidado";
 
   return (
     <main className="min-h-screen w-full bg-[#2b160b]">
@@ -325,7 +324,7 @@ export default async function ConvitePage({ params, searchParams }: Props) {
           </div>
           {/* botão */}
           <Link
-            href={`/convite?guest=${encodeURIComponent(nomeConvidado)}`}
+            href={`/convite?guestId=${id}`}
             className={`${rye.className} relative mt-6 mb-6 block w-full rounded-2xl px-5 py-4 text-center font-serif text-[25px] font-black text-[#fff4d8] transition active:translate-y-1`}
             style={{
               background: "linear-gradient(180deg, #a94d1c, #61250c)",

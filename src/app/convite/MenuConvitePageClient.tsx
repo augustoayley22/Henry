@@ -7,6 +7,8 @@ import EstrelasAnimadas from "@/components/Bandeirinhas/EstrelasAnimadas";
 import { Rye } from "next/font/google";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 const rye = Rye({
   subsets: ["latin"],
@@ -15,23 +17,6 @@ const rye = Rye({
 
 type GuestStatus = "pending" | "confirmed" | "declined";
 
-type Guest = {
-  id: string;
-  name: string;
-  status: GuestStatus;
-  createdAt: string;
-};
-
-const STORAGE_KEY = "arraia_guests";
-
-function slugify(name: string) {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
 
 export default function MenuConvitePage() {
   const [open, setOpen] = useState(false);
@@ -39,36 +24,48 @@ export default function MenuConvitePage() {
     message: string;
     type: "success" | "error";
   } | null>(null);
+  const [guestName, setGuestName] = useState("Convidado");
 
   const searchParams = useSearchParams();
-  const guestSlug = searchParams.get("guest");
+  const guestId = searchParams.get("guestId");
 
-  const guestName = guestSlug
-    ? decodeURIComponent(guestSlug).replaceAll("-", " ")
-    : "Convidado";
+  useEffect(() => {
+  async function loadGuest() {
+      if (!guestId) return;
 
-  function updateGuestStatus(status: GuestStatus) {
-    if (!guestSlug) return;
+      const { data, error } = await supabase
+        .from("guests")
+        .select("name")
+        .eq("id", guestId)
+        .single();
 
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return;
-
-    const guests: Guest[] = JSON.parse(saved);
-
-    const updatedGuests = guests.map((guest) => {
-      const currentSlug = slugify(guest.name);
-
-      if (currentSlug === guestSlug) {
-        return {
-          ...guest,
-          status,
-        };
+      if (error) {
+        console.error(error);
+        return;
       }
 
-      return guest;
-    });
+      setGuestName(data?.name || "Convidado");
+    }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedGuests));
+    loadGuest();
+  }, [guestId]);
+
+  async function updateGuestStatus(status: GuestStatus) {
+    if (!guestId) {
+      showToast("Convidado não encontrado", "error");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("guests")
+      .update({ status })
+      .eq("id", guestId);
+
+    if (error) {
+      console.error(error);
+      showToast("Erro ao registrar resposta", "error");
+      return;
+    }
   }
 
   function showToast(message: string, type: "success" | "error" = "success") {
@@ -187,7 +184,7 @@ export default function MenuConvitePage() {
                   }}
                 >
                   <span className="mr-2">🎉</span>
-                  Confirmar Presença
+                  Você poderá comparecer?
 
                   <span className="pointer-events-none absolute inset-2 rounded-xl border-2 border-dashed border-[#eaffc7]/65" />
                 </button>
@@ -235,8 +232,8 @@ export default function MenuConvitePage() {
 
                 {/* CONFIRMAR */}
                 <button
-                  onClick={() => {
-                    updateGuestStatus("confirmed");
+                  onClick={async () => {
+                    await updateGuestStatus("confirmed");
                     showToast("Presença confirmada! 🎉", "success");
                     setOpen(false);
                   }}
@@ -252,8 +249,8 @@ export default function MenuConvitePage() {
 
                 {/* NÃO VOU */}
                 <button
-                  onClick={() => {
-                    updateGuestStatus("declined");
+                  onClick={async () => {
+                    await updateGuestStatus("declined");
                     showToast("Resposta registrada 😢", "error");
                     setOpen(false);
                   }}
